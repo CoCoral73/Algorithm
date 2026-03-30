@@ -1,99 +1,87 @@
+//
+//  main.cpp
+//  CppPractice
+//
+//  Created by 김정원 on 3/13/26.
+//
+
 #include <iostream>
-#include <sstream>
-#include <string>
 #include <vector>
-#include <queue>
 #include <map>
 #include <set>
 #include <algorithm>
-#include <cmath>
-#include <limits.h>
-#include <cctype>
-#define int long long
-#define fastIO ios_base::sync_with_stdio(false), cin.tie(0), cout.tie(0)
+#include <queue>
+#define pii pair<int, int>
+
 using namespace std;
 
-class BJ {
-    int N, M, P;
-    vector<int> Sp;
-    vector<int> castle;
-    vector<queue<tuple<int, int, int>>> PQ;
-    char grid[1000][1000];
-    bool visited[1000][1000];
-    int dr[4] = {-1, 0, 1, 0};
-    int dc[4] = {0, 1, 0, -1};
-public:
-    BJ();
-    void bfs();
-};
+const int INF = 2e9;
+int dr[4] = {-1, 0, 1, 0};
+int dc[4] = {0, 1, 0, -1};
 
-BJ::BJ() {
+int N, M, P;
+int S[10], castle[10];
+vector<string> grid;
+vector<queue<pair<pii, int>>> Q(10);
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL); cout.tie(NULL);
+    
     cin >> N >> M >> P;
-    Sp = vector<int>(P);
-    castle = vector<int>(P);
-    PQ = vector<queue<tuple<int, int, int>>>(P);
-
-    for (int &s : Sp)
-        cin >> s;
-
+    for (int i = 1; i <= P; i++) {
+        cin >> S[i];
+    }
     for (int i = 0; i < N; i++) {
+        string str;
+        cin >> str;
+        grid.push_back(str);
         for (int j = 0; j < M; j++) {
-            cin >> grid[i][j];
-            visited[i][j] = false;
-            if (isdigit(grid[i][j])) {
-                castle[grid[i][j] - '1']++;
-                PQ[grid[i][j]-'1'].emplace(i, j, 0);
-                visited[i][j] = true;
+            if (str[j] >= '1' && str[j] <= '9') {
+                int p = str[j] - '0';
+                castle[p]++;
+                Q[p].push({{i, j}, 0});
             }
         }
     }
-
-    bfs();
-    for (int c : castle)
-        cout << c << ' ';
-}
-void BJ::bfs() {
-    queue<tuple<int, int, int>> Q;
-
-    int p = 0;
-    int r, c, s;
-    int canGo = 0;
+    
+    int player = 0;
+    bool flag = false;
     while (true) {
-        queue<tuple<int, int, int>> Q;
-        while (!PQ[p].empty()) {
-            tie(r, c, s) = PQ[p].front();
-            PQ[p].pop();
-
+        player = player % P + 1;
+        if (player == 1) flag = false;
+        
+        queue<pair<pii, int>> tmp;
+        while (!Q[player].empty()) {
+            int y = Q[player].front().first.first;
+            int x = Q[player].front().first.second;
+            int s = Q[player].front().second;
+            Q[player].pop();
+            
+            if (s == S[player]) {
+                tmp.push({{y, x}, 0});
+            }
+            
             for (int i = 0; i < 4; i++) {
-                int R = r + dr[i];
-                int C = c + dc[i];
-                if (R < 0 || R >= N || C < 0 || C >= M) continue;
-                if (visited[R][C] || grid[R][C] == '#') continue;
-                if (isdigit(grid[R][C])) continue;
-                if (s + 1 > Sp[grid[r][c]-'1']) continue;
-                grid[R][C] = grid[r][c];
-                visited[R][C] = true;
-                castle[grid[r][c]-'1']++;
-                if (s + 1 == Sp[grid[r][c]-'1'])
-                    Q.emplace(R, C, 0);
-                else
-                    PQ[p].emplace(R, C, s + 1);
+                int r = y + dr[i];
+                int c = x + dc[i];
+                
+                if (r < 0 || r >= N || c < 0 || c >= M) continue;
+                if (grid[r][c] != '.') continue;
+                if (s + 1 > S[player]) continue;
+                grid[r][c] = grid[y][x];
+                castle[player]++;
+                flag = true;
+                Q[player].push({{r, c}, s + 1});
             }
         }
-        if (Q.empty())
-            canGo++;
-        else
-            canGo = 0;
-        if (canGo == P)
-            break;
-        PQ[p] = Q;
-        p = (p + 1) % P;
+        
+        Q[player] = tmp;
+        
+        if (player == P && !flag) break;
     }
-}
-
-
-signed main() {
-    fastIO;
-
-    BJ Q16920;
+    
+    for (int i = 1; i <= P; i++) {
+        cout << castle[i] << ' ';
+    }
 }
