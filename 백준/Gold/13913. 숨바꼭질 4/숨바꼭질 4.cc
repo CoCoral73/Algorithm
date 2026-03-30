@@ -1,103 +1,75 @@
+//
+//  main.cpp
+//  CppPractice
+//
+//  Created by 김정원 on 3/13/26.
+//
+
 #include <iostream>
 #include <vector>
-#include <queue>
 #include <map>
 #include <set>
 #include <algorithm>
-#define fastIO ios_base::sync_with_stdio(false), cin.tie(0), cout.tie(0)
+#include <queue>
+#define pii pair<int, int>
+
 using namespace std;
 
-typedef struct node {
-    int loc;
-    int time;
-}NODE;
+const int INF = 2e9;
 
-class BJ {
-    int N, K;
-    int answer = INT32_MAX;
-public:
-    BJ();
-    void bfs();
-};
+int N, K;
+int isVisited[100001];
 
-BJ::BJ() {
-    cin >> N >> K;
-}
-void BJ::bfs() {
-    if (N >= K) {
-        cout << N-K << '\n';
-        for (int i = N; i >= K; i--)
-            cout << i << ' ';
-        return;
-    }
-    pair<int, int> visit[200001];
-    for (int i = 0; i < 200001; i++)
-        visit[i] = {INT32_MAX, INT32_MAX};
-    queue<NODE> Q;
-    Q.push({N, 0});
-    visit[N] = {0, N};
-    while (!Q.empty()) {
-        int X = Q.front().loc;
-        int t = Q.front().time;
-        Q.pop();
-
-        if (X-1 >= 0) {
-            if (X-1 == K) {
-                if (answer > t+1) {
-                    answer = t + 1;
-                    visit[X-1] = {t+1, X};
-                    continue;
-                }
-            }
-            else if (t+1 < visit[X-1].first) {
-                visit[X-1] = {t+1, X};
-                Q.push({X-1, t+1});
-            }
-        }
-        if (X+1 <= K) {
-            if (X+1 == K) {
-                if (answer > t+1) {
-                    answer = t + 1;
-                    visit[X+1] = {t+1, X};
-                    continue;
-                }
-            }
-            else if (t+1 < visit[X+1].first) {
-                visit[X+1] = {t+1, X};
-                Q.push({X+1, t+1});
-            }
-        }
-        if (2*X <= 200000) {
-            if (2*X == K) {
-                if (answer > t+1) {
-                    answer = t+1;
-                    visit[2*X] = {t+1, X};
-                    continue;
-                }
-            }
-            else if (t+1 < visit[2*X].first) {
-                visit[2*X] = {t+1, X};
-                Q.push({2*X, t+1});
-            }
-        }
-    }
-
-    cout << answer << '\n';
-    vector<int> route;
-    int now = K;
-    while (true) {
-        route.insert(route.begin(), now);
-        if (now == N)
-            break;
-        now = visit[now].second;
-    }
-    for (int i = 0; i < route.size(); i++)
-        cout << route[i] << ' ';
-}
+void dfs(int x);
+vector<int> v;
 
 int main() {
-    fastIO;
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL); cout.tie(NULL);
+    
+    fill(isVisited, isVisited + 100001, INF);
+    
+    cin >> N >> K;
+    
+    queue<int> q;
+    q.push(N);
+    isVisited[N] = 0;
+    
+    while (!q.empty()) {
+        int x = q.front();
+        q.pop();
+        
+        if (x == K) {
+            cout << isVisited[x] << '\n';
+            dfs(x);
+            
+            for (int i = v.size() - 1; i >= 0; i--) {
+                cout << v[i] << ' ';
+            }
+            return 0;
+        }
+        
+        if (x - 1 >= 0 && isVisited[x-1] > isVisited[x] + 1) {
+            q.push(x-1);
+            isVisited[x-1] = isVisited[x] + 1;
+        }
+        if (x + 1 <= 100000 && isVisited[x+1] > isVisited[x] + 1) {
+            q.push(x+1);
+            isVisited[x+1] = isVisited[x] + 1;
+        }
+        if (2*x <= 100000 && isVisited[2*x] > isVisited[x] + 1) {
+            q.push(2*x);
+            isVisited[2*x] = isVisited[x] + 1;
+        }
+    }
+}
 
-    BJ a;
-    a.bfs();
+void dfs(int x) {
+    v.push_back(x);
+    if (x == N) return;
+    
+    if (x - 1 >= 0 && isVisited[x-1] == isVisited[x] - 1) dfs(x-1);
+    else if (x % 2 == 0 && isVisited[x/2] == isVisited[x] - 1) dfs(x/2);
+    else if (x + 1 <= 100000 && isVisited[x+1] == isVisited[x] - 1) dfs(x+1);
+    
 }
