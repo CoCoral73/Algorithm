@@ -1,70 +1,80 @@
+//
+//  main.cpp
+//  CppPractice
+//
+//  Created by 김정원 on 3/13/26.
+//
+
 #include <iostream>
-#include <string>
 #include <vector>
-#include <queue>
 #include <map>
 #include <set>
 #include <algorithm>
-#include <functional>
-#define fastIO ios_base::sync_with_stdio(false), cin.tie(0), cout.tie(0)
+#include <queue>
+#define pii pair<int, int>
+
 using namespace std;
 
-typedef struct vertex {
-    int num;
-    struct vertex *parent;
-}VERTEX;
-VERTEX* createVertex(int n) {
-    VERTEX* v = new VERTEX;
-    v->num = n;
-    v->parent = v;
-    return v;
-}
-int findParent(VERTEX** vs, VERTEX* v) {
-    if (v == v->parent)
-        return v->num;
-    int p = findParent(vs, v->parent);
-    v->parent = vs[p];
-    return p;
+const int INF = 2e9;
+
+int V, E;
+int parent[10001];
+bool isMST[10001];
+vector<pair<int, pii>> edge;
+
+bool compare(pair<int, pii> x, pair<int, pii> y) {
+    return x.first < y.first;
 }
 
-typedef struct edge {
-    int weight;
-    int V1, V2;
-    bool operator<(const edge v) const {
-        return this->weight > v.weight;
+int findParent(int x) {
+    if (x != parent[x]) {
+        parent[x] = findParent(parent[x]);
     }
-}EDGE;
+    return parent[x];
+}
+
+void unionParent(int x, int y) {
+    int px = findParent(x), py = findParent(y);
+    if (px == py) return;
+    
+    if (px < py) {
+        parent[py] = px;
+    } else {
+        parent[px] = py;
+    }
+}
 
 int main() {
-    fastIO;
-
-    int V, E;
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL); cout.tie(NULL);
+    
     cin >> V >> E;
-
-    VERTEX** Vs = new VERTEX*[V+1];
+    
     for (int i = 1; i <= V; i++)
-        Vs[i] = createVertex(i);
-
-    priority_queue<EDGE> Q;
-    int A, B, C;
+        parent[i] = i;
+    
     for (int i = 0; i < E; i++) {
-        cin >> A >> B >> C;
-        Q.push({C, A, B});
+        int a, b, c;
+        cin >> a >> b >> c;
+        edge.push_back({c, {a, b}});
     }
     
-    long long answer = 0;
-    while (!Q.empty()) {
-        EDGE e = Q.top();
-        Q.pop();
-        int P_V1 = findParent(Vs, Vs[e.V1]);
-        int P_V2 = findParent(Vs, Vs[e.V2]);
-        if (P_V1 != P_V2) {
-            answer += e.weight;
-            if (P_V1 < P_V2)
-                Vs[P_V2]->parent = Vs[P_V1];
-            else
-                Vs[P_V1]->parent = Vs[P_V2];
+    sort(edge.begin(), edge.end(), compare);
+    
+    int count = 0, weight = 0;
+    for (int i = 0; i < edge.size(); i++) {
+        if (count == V - 1) break;
+        
+        int w, a, b;
+        w = edge[i].first;
+        tie(a, b) = edge[i].second;
+        if (findParent(a) != findParent(b)) {
+            weight += w;
+            unionParent(a, b);
+            isMST[a] = true;
+            isMST[b] = true;
         }
     }
-    cout << answer;
+    
+    cout << weight;
 }
