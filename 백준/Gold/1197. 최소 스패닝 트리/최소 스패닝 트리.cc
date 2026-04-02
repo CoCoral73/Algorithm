@@ -11,6 +11,7 @@
 #include <set>
 #include <algorithm>
 #include <queue>
+#include <functional>
 #define pii pair<int, int>
 
 using namespace std;
@@ -18,31 +19,9 @@ using namespace std;
 const int INF = 2e9;
 
 int V, E;
-int parent[10001];
+vector<vector<pii>> graph(10001);
+priority_queue<pair<int, pii>, vector<pair<int, pii>>, greater<pair<int, pii>>> pq;
 bool isMST[10001];
-vector<pair<int, pii>> edge;
-
-bool compare(pair<int, pii> x, pair<int, pii> y) {
-    return x.first < y.first;
-}
-
-int findParent(int x) {
-    if (x != parent[x]) {
-        parent[x] = findParent(parent[x]);
-    }
-    return parent[x];
-}
-
-void unionParent(int x, int y) {
-    int px = findParent(x), py = findParent(y);
-    if (px == py) return;
-    
-    if (px < py) {
-        parent[py] = px;
-    } else {
-        parent[px] = py;
-    }
-}
 
 int main() {
     ios_base::sync_with_stdio(false);
@@ -50,29 +29,35 @@ int main() {
     
     cin >> V >> E;
     
-    for (int i = 1; i <= V; i++)
-        parent[i] = i;
-    
     for (int i = 0; i < E; i++) {
         int a, b, c;
         cin >> a >> b >> c;
-        edge.push_back({c, {a, b}});
+        graph[a].push_back({c, b});
+        graph[b].push_back({c, a});
     }
     
-    sort(edge.begin(), edge.end(), compare);
+    isMST[1] = true;
+    for (pii x : graph[1]) {
+        pq.push({x.first, {1, x.second}});
+    }
     
     int count = 0, weight = 0;
-    for (int i = 0; i < edge.size(); i++) {
+    while (!pq.empty()) {
+        int cost = pq.top().first;
+        int a, b;
+        tie(a, b) = pq.top().second;
+        pq.pop();
+        
         if (count == V - 1) break;
         
-        int w, a, b;
-        w = edge[i].first;
-        tie(a, b) = edge[i].second;
-        if (findParent(a) != findParent(b)) {
-            weight += w;
-            unionParent(a, b);
-            isMST[a] = true;
+        if (!isMST[b]) {
             isMST[b] = true;
+            weight += cost;
+            count++;
+            
+            for (pii x : graph[b]) {
+                pq.push({x.first, {b, x.second}});
+            }
         }
     }
     
