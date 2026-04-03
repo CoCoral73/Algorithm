@@ -1,61 +1,64 @@
+//
+//  main.cpp
+//  CppPractice
+//
+//  Created by 김정원 on 3/13/26.
+//
+
 #include <iostream>
 #include <vector>
+#include <map>
+#include <set>
 #include <algorithm>
-#define fastIO ios_base::sync_with_stdio(false), cin.tie(0), cout.tie(0)
+#include <queue>
+#include <functional>
+#define pii pair<int, int>
+
 using namespace std;
 
-typedef struct node {
-    int next;
-    bool isTeam;
-    int visit;
-    int indexInVector;
-}NODE;
+const int INF = 1e9;
 
-vector<int> connect;
-int v_idx;
+int n, answer;
+vector<int> v;
+vector<int> isVisited;
 
-void dfs(NODE* member, int start) {
-    if (member[start].isTeam || member[start].visit == 2)
-        return;
-    if (member[start].visit == 1) {
-        v_idx = member[start].indexInVector;
-        return;
+void dfs(int x) {
+    isVisited[x] = 1;
+    
+    int y = v[x];
+    if (isVisited[y] == 1) {
+        for (int next = v[y]; next != y; next = v[next])
+            answer--;
+        answer--;
+    } else if (isVisited[y] == 0) {
+        dfs(y);
     }
-    connect.emplace_back(start);
-    member[start].indexInVector = connect.size()-1;
-    member[start].visit = 1;
-    dfs(member, member[start].next);
-    if (member[start].indexInVector >= v_idx)
-        member[start].isTeam = true;
-    else
-        member[start].visit = 2;
+    
+    isVisited[x] = 2;
 }
 
 int main() {
-    fastIO;
-
-    int T, n, num;
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL); cout.tie(NULL);
+    
+    int T;
     cin >> T;
-
-    for (int i = 0; i < T; i++) {
+    while (T--) {
         cin >> n;
-        NODE *member = new NODE[n];
-        for (int j = 0; j < n; j++) {
-            cin >> num;
-            member[j] = {num-1, false, 0};
+        
+        v.assign(n + 1, 0);
+        for (int i = 1; i <= n; i++) {
+            cin >> v[i];
         }
-
-        int answer = 0;
-        for (int j = 0; j < n; j++) {
-            connect.clear();
-            v_idx = INT32_MAX;
-            dfs(member, j);
-            if (!member[j].isTeam)
-                answer++;
-            //cout << j+1 << ' ' << member[j].isTeam << endl;
+        
+        isVisited.assign(n + 1, 0);
+        answer = n;
+        for (int i = 1; i <= n; i++) {
+            if (!isVisited[i]) {
+                dfs(i);
+            }
         }
         cout << answer << '\n';
-
-        delete[] member;
     }
 }
+
