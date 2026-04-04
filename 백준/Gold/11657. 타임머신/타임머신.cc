@@ -12,50 +12,51 @@
 #include <algorithm>
 #include <queue>
 #include <functional>
-#define pii pair<int, int>
 #define int long long
+#define pii pair<int, int>
+
 
 using namespace std;
 
-const int INF = 2e9;
-
-int N, M;
-vector<pair<int, pii>> graph;
-vector<int> dist(501, INF);
+const int INF = 1e9;
 
 signed main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL); cout.tie(NULL);
     
+    int N, M;
     cin >> N >> M;
+    
+    int dist[501][501];
+    fill(&dist[0][0], &dist[0][0] + 501 * 501, INF);
+    
+    for (int i = 1; i <= N; i++) dist[i][i] = 0;
+    
     for (int i = 0; i < M; i++) {
-        int A, B, C;
-        cin >> A >> B >> C;
-        graph.push_back({C, {A, B}});
+        int a, b, c;
+        cin >> a >> b >> c;
+        dist[a][b] = min(dist[a][b], c);
     }
     
-    dist[1] = 0;
-    bool flag = false;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            int w = graph[j].first;
-            int s, e;
-            tie(s, e) = graph[j].second;
-            
-            if (dist[s] != INF && w + dist[s] < dist[e]) {
-                dist[e] = w + dist[s];
-                if (i == N-1) {
-                    flag = true;
+    for (int k = 1; k <= N; k++) {
+        for (int i = 1; i <= N; i++) {
+            for (int j = 1; j <= N; j++) {
+                if (dist[i][k] != INF && dist[k][j] != INF && dist[i][j] > dist[i][k] + dist[k][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
                 }
             }
         }
     }
     
-    if (flag) {
-        cout << -1;
-    } else {
-        for (int i = 2; i <= N; i++) {
-            cout << (dist[i] == INF ? -1 : dist[i]) << '\n';
+    for (int i = 1; i <= N; i++) {
+        if (dist[i][i] < 0 && dist[1][i] != INF) {
+            cout << -1;
+            return 0;
         }
     }
+
+    for (int i = 2; i <= N; i++) {
+        cout << (dist[1][i] == INF ? -1 : dist[1][i]) << '\n';
+    }
 }
+
