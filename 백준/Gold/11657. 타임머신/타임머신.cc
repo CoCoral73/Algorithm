@@ -27,36 +27,34 @@ signed main() {
     int N, M;
     cin >> N >> M;
     
-    int dist[501][501];
-    fill(&dist[0][0], &dist[0][0] + 501 * 501, INF);
-    
-    for (int i = 1; i <= N; i++) dist[i][i] = 0;
-    
+    vector<pair<int, pii>> graph;
     for (int i = 0; i < M; i++) {
         int a, b, c;
         cin >> a >> b >> c;
-        dist[a][b] = min(dist[a][b], c);
+        graph.push_back({c, {a, b}});
     }
     
-    for (int k = 1; k <= N; k++) {
-        for (int i = 1; i <= N; i++) {
-            for (int j = 1; j <= N; j++) {
-                if (dist[i][k] != INF && dist[k][j] != INF && dist[i][j] > dist[i][k] + dist[k][j]) {
-                    dist[i][j] = dist[i][k] + dist[k][j];
+    vector<int> dist(501, INF);
+    dist[1] = 0;
+    
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            int a, b, c;
+            c = graph[j].first;
+            tie(a, b) = graph[j].second;
+            
+            if (dist[a] != INF && dist[a] + c < dist[b]) {
+                dist[b] = dist[a] + c;
+                if (i == N-1) {
+                    cout << -1;
+                    return 0;
                 }
             }
         }
     }
     
-    for (int i = 1; i <= N; i++) {
-        if (dist[i][i] < 0 && dist[1][i] != INF) {
-            cout << -1;
-            return 0;
-        }
-    }
-
     for (int i = 2; i <= N; i++) {
-        cout << (dist[1][i] == INF ? -1 : dist[1][i]) << '\n';
+        cout << (dist[i] == INF ? -1 : dist[i]) << '\n';
     }
 }
 
